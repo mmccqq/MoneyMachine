@@ -30,7 +30,7 @@ def calculation(connection, table, date):
 
   # BOLL
   if len(close_list) >= 20:
-    boll = formulas.BOLL(indicators[3], close_list[0:20], 20, 2)
+    boll = formulas.BOLL(indicators[2], close_list[0:20], 20, 2)
     indicators.append(boll[0])
     indicators.append(boll[1])
   
@@ -39,17 +39,17 @@ def calculation(connection, table, date):
     indicators.append(None)
   
   # MACD
-  if EMA12_list[0] is None or EMA26_list[0] is None or DEA_list[0] is None:
+  if EMA12_list is None or EMA12_list[1] is None:
     indicators.extend([close_list[0], close_list[0], 0, 0])
   else:
-    EMA12 = formulas.EMA(close_list[0], EMA12_list[0], 12)
+    EMA12 = formulas.EMA(close_list[0], EMA12_list[1], 12)
     indicators.append(EMA12)
-    EMA26 = formulas.EMA(close_list[0], EMA26_list[0], 26)
+    EMA26 = formulas.EMA(close_list[0], EMA26_list[1], 26)
     indicators.append(EMA26)
     DIF = EMA12 - EMA26
-    DEA = formulas.EMA(DIF, DEA_list[0], 9)
+    DEA = formulas.EMA(DIF, DEA_list[1], 9)
     indicators.append(DEA)
-    MACD = DIF - DEA
+    MACD = (DIF - DEA) * 2
     indicators.append(MACD)
   
   return indicators

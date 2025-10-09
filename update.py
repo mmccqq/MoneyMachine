@@ -40,26 +40,26 @@ def update():
       
 
 def main():
-  # connection = SQL.create_connection("share_data/sh603686.db")
+  connection = SQL.create_connection("share_data/sh603686.db")
   # SQL.create_table(connection, 'day')
   # for row in SQL.fetch_all_data(connection, 'day'):
   #   print(row)
   fetch.get_price('sh603686', end_date = '2025-07-30', count = '10', frequency = 'day')
 
   update()
-  # cursor = connection.cursor()
+  cursor = connection.cursor()
 
-  # # Query data
-  # cursor.execute("SELECT * FROM day")
-  # rows = cursor.fetchall()
+  # Query data
+  cursor.execute("SELECT * FROM day")
+  rows = cursor.fetchall()
 
-  # # Save to CSV
-  # with open("students.csv", "w", newline="") as file:
-  #     writer = csv.writer(file)
-  #     writer.writerow([description[0] for description in cursor.description])  # header
-  #     writer.writerows(rows)
+  # Save to CSV
+  with open("students.csv", "w", newline="") as file:
+      writer = csv.writer(file)
+      writer.writerow([description[0] for description in cursor.description])  # header
+      writer.writerows(rows)
 
-  # connection.close()
+  connection.close()
 
 if __name__ == '__main__':
   main()
