@@ -6,18 +6,21 @@ def create_connection(db_name):
     print(f"Error connecting to database: {e}")
     raise
 
+def if_table_exists(connection, frequency:str):
+  try:
+    with connection:
+      cursor = connection.cursor()
+      cursor.execute("""
+                    SELECT name FROM sqlite_master WHERE type='table' AND name=?;
+                    """, (frequency,))
+      table_exists = cursor.fetchone()
+      return bool(table_exists)
+  except Exception as e:
+    print(f"Error checking table existence: {e}")
+    raise
+
 def create_table(connection, frequency:str):
-  cursor = connection.cursor()
-  cursor.execute("""
-                 SELECT name FROM sqlite_master WHERE type='table' AND name=?;
-                 """, (frequency,))
-  table_exists = cursor.fetchone()
-  if table_exists:
-    print(f"Table {frequency} already exists.")
-    return False
-
   # Create table if it does not exist
-
   if frequency in ['week', 'month']:
     query = f"""
     CREATE TABLE IF NOT EXISTS {frequency} (
@@ -89,7 +92,7 @@ def insert_raw_data(connection, frequency:str, data:tuple):
   try:
     with connection:
       connection.executemany(query, data)
-    print("Data inserted successfully")
+    # print("Data inserted successfully")
   except Exception as e:
     print(f"Error inserting data: {e}")
     raise
@@ -104,7 +107,7 @@ def update_data(connection, frequency:str, data:tuple):
   try:
     with connection:
       connection.execute(query, data)
-    print("Data updated successfully")
+    # print("Data updated successfully")
   except Exception as e:
     print(f"Error updating data: {e}")
     raise
@@ -131,16 +134,15 @@ def search_latest_date(connection, frequency:str):
     raise
 
 def search_data_by_condition(connection, frequency:str, condition:str, count:int):
-  query = f"SELECT close, EMA12, EMA26, DEA FROM {frequency} WHERE {condition} ORDER BY date DESC LIMIT {count}"
+  query = f"SELECT * FROM {frequency} WHERE {condition} ORDER BY date DESC LIMIT {count}"
   try:
     with connection:
       cursor = connection.execute(query)
       rows = cursor.fetchall()
       if rows:  # check if any data was returned
-        close_list, EMA12_list, EMA26_list, DEA_list = zip(*rows)
-        return list(close_list), list(EMA12_list), list(EMA26_list), list(DEA_list)
+        return rows
       else:
-        return [], [], [], []  # return empty lists if no rows  
+        return []  # return empty lists if no rows  
   except Exception as e:
     print(f"Error fetching data by condition: {e}")
     raise

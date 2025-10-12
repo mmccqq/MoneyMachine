@@ -1,5 +1,4 @@
 import requests, json
-from datetime import datetime
 import SQL_operation as SQL
 
 def get_data_min_tx(share_id, count = '', frequency = '60m'):
@@ -14,6 +13,7 @@ def get_data_min_tx(share_id, count = '', frequency = '60m'):
   connection = SQL.create_connection(f'{share_id}.db')
   latest = SQL.search_latest_date(connection, frequency)
 
+  # convert raw data to required format
   for index, data in enumerate(share_min_data):
     result.append([])
     if int(latest) < int(data[0]):
@@ -22,8 +22,9 @@ def get_data_min_tx(share_id, count = '', frequency = '60m'):
       result[index].append(data[0][8:12])
       for i in range(1, 5):
         result[index].append(data[i])
+  if SQL.if_table_exists(connection, frequency) == False:
+    SQL.create_table(connection, frequency)
 
-  SQL.create_table(connection, frequency)
   #need to avoid duplicate data
   SQL.insert_raw_data(connection, frequency, result)
 
@@ -34,23 +35,22 @@ def get_data_day_tx(share_id, end_date = '', count = '', frequency = 'day'):
   share_day_data = raw_data['data'][f'{share_id}'][f'qfq{frequency}']
   
   connection = SQL.create_connection(f'share_data/{share_id}.db')
-  SQL.create_table(connection, frequency)
-  #   EMA12, EMA25, DEA = input("Please input the latest " \
-  #   "EMA12, EMA25, DEA values separated by commas: ").split(',')
 
+  if SQL.if_table_exists(connection, frequency) == False:
+    SQL.create_table(connection, frequency)
 
   # need to avoid duplicate data
   latest = SQL.search_latest_date(connection, frequency)
-  result = []
+  insert_data = []
   date_list = []
   for data in share_day_data:
     if latest < data[0]:
-      result.append([])
+      insert_data.append([])
       date_list.append(data[0])
       for i in range(0, 5):
-        result[-1].append(data[i])
+        insert_data[-1].append(data[i])
   
-  SQL.insert_raw_data(connection, frequency, result)
+  SQL.insert_raw_data(connection, frequency, insert_data)
   # for row in SQL.fetch_all_data(connection, frequency):
   #   print(row)
   return date_list

@@ -6,8 +6,18 @@ def calculation(connection, table, date):
   indicators = []
   # MA5, MA10, MA20, MA30, MA60, MA120, MA250,
   # BOLL_UPPER, BOLL_MIDDLE, BOLL_LOWER, MACD
-  close_list, EMA12_list, EMA26_list, DEA_list \
-    = SQL.search_data_by_condition(connection, table, f'date <= \'{date}\'', 250)
+  data = SQL.search_data_by_condition(connection, table, f'date <= \'{date}\'', 250)
+  close_list = []
+  if data[1][20] is None:
+    EMA12_list = None
+    EMA26_list = None
+    DEA_list = None
+  else:
+    EMA12_list = data[1][20]
+    EMA26_list = data[1][21]
+    DEA_list = data[1][22]
+  for row in data:
+    close_list.append(row[8])
   # MA
   if len(close_list) >= 5:
     indicators.append(formulas.MA(close_list[0:5], 5))
@@ -42,12 +52,12 @@ def calculation(connection, table, date):
   if EMA12_list is None or EMA12_list[1] is None:
     indicators.extend([close_list[0], close_list[0], 0, 0])
   else:
-    EMA12 = formulas.EMA(close_list[0], EMA12_list[1], 12)
+    EMA12 = formulas.EMA(close_list[0], EMA12_list, 12)
     indicators.append(EMA12)
-    EMA26 = formulas.EMA(close_list[0], EMA26_list[1], 26)
+    EMA26 = formulas.EMA(close_list[0], EMA26_list, 26)
     indicators.append(EMA26)
     DIF = EMA12 - EMA26
-    DEA = formulas.EMA(DIF, DEA_list[1], 9)
+    DEA = formulas.EMA(DIF, DEA_list, 9)
     indicators.append(DEA)
     MACD = (DIF - DEA) * 2
     indicators.append(MACD)
