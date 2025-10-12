@@ -122,17 +122,6 @@ def fetch_all_data(connection, frequency:str):
     print(f"Error fetching data: {e}")
     raise
 
-def search_latest_date(connection, frequency:str):
-  query = f"SELECT date FROM {frequency} ORDER BY date DESC LIMIT 1"
-  try:
-    with connection:
-      cursor = connection.execute(query)
-      result = cursor.fetchone()
-      return result[0] if result else '2015-01-01'
-  except Exception as e:
-    print(f"Error fetching latest date: {e}")
-    raise
-
 def search_data_by_condition(connection, frequency:str, condition:str, count:int):
   query = f"SELECT * FROM {frequency} WHERE {condition} ORDER BY date DESC LIMIT {count}"
   try:

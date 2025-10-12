@@ -8,21 +8,25 @@ def update(share_id_list):
   # for each database, find the latest date in each table.
   for share_id in share_id_list:
     connection = SQL.create_connection(f'share_data/{share_id}.db')
-    for table in ['day']:
-      latest = SQL.search_latest_date(connection, table)      
+    for frequency in ['day']:
+      latest = SQL.search_data_by_condition(connection, frequency, f"date <= '{datetime.today().strftime("%Y-%m-%d")}'", 1);      
       # fetch new data from that date to today.
-      if table == 'day':
+      if not latest:
+        latest = '2015-01-01'
+      else:
+        latest = latest[0][1]
+      if frequency == 'day':
         count = (datetime.today() - datetime.strptime(latest, "%Y-%m-%d")).days
         if count == 0:
-          print(f"No new data for {share_id} in {table} table.")
+          print(f"No new data for {share_id} in {frequency} table.")
           continue
         date_list = fetch.get_price(share_id, datetime.today().strftime("%Y-%m-%d"), count, 'day')
       
       
       for date in date_list:
-        indicators = calculation(connection, table, date)
+        indicators = calculation(connection, frequency, date)
         indicators.append(date)
-        SQL.update_data(connection, table, indicators)
+        SQL.update_data(connection, frequency, indicators)
 
         
 

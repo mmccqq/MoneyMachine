@@ -1,5 +1,6 @@
 import requests, json
 import SQL_operation as SQL
+from datetime import datetime
 
 def get_data_min_tx(share_id, count = '', frequency = '60m'):
 
@@ -11,8 +12,11 @@ def get_data_min_tx(share_id, count = '', frequency = '60m'):
   result = []
   
   connection = SQL.create_connection(f'{share_id}.db')
-  latest = SQL.search_latest_date(connection, frequency)
-
+  latest = SQL.search_data_by_condition(connection, frequency, f"date <= '{datetime.today().strftime("%Y-%m-%d")}'", 1);      
+  if not latest:
+    latest = '2015-01-01'
+  else:
+    latest = latest[0][1]
   # convert raw data to required format
   for index, data in enumerate(share_min_data):
     result.append([])
@@ -40,7 +44,12 @@ def get_data_day_tx(share_id, end_date = '', count = '', frequency = 'day'):
     SQL.create_table(connection, frequency)
 
   # need to avoid duplicate data
-  latest = SQL.search_latest_date(connection, frequency)
+  latest = SQL.search_data_by_condition(connection, frequency, f"date <= '{datetime.today().strftime("%Y-%m-%d")}'", 1);      
+  if not latest:
+    latest = '2015-01-01'
+  else:
+    latest = latest[0][1]
+  
   insert_data = []
   date_list = []
   for data in share_day_data:
