@@ -4,10 +4,10 @@ from datetime import datetime
 import fetch 
 from calculation import calculation
 
-def update(share_id_list):
+def update(stock_id_list):
   # for each database, find the latest date in each table.
-  for share_id in share_id_list:
-    connection = SQL.create_connection(f'share_data/{share_id}.db')
+  for stock_id in stock_id_list:
+    connection = SQL.create_connection(f'stock_data/{stock_id}.db')
     for frequency in ['day']:
       latest = SQL.search_data_by_condition(connection, frequency, f"date <= '{datetime.today().strftime("%Y-%m-%d")}'", 1);      
       # fetch new data from that date to today.
@@ -18,9 +18,9 @@ def update(share_id_list):
       if frequency == 'day':
         count = (datetime.today() - datetime.strptime(latest, "%Y-%m-%d")).days
         if count == 0:
-          print(f"No new data for {share_id} in {frequency} table.")
+          print(f"No new data for {stock_id} in {frequency} table.")
           continue
-        date_list = fetch.get_price(share_id, datetime.today().strftime("%Y-%m-%d"), count, 'day')
+        date_list = fetch.get_price(stock_id, datetime.today().strftime("%Y-%m-%d"), count, 'day')
       
       
       for date in date_list:
@@ -34,7 +34,7 @@ def update(share_id_list):
       
 
 def main():
-  connection = SQL.create_connection("share_data/sh603686.db")
+  connection = SQL.create_connection("stock_data/sh603686.db")
  
   # for row in SQL.fetch_all_data(connection, 'day'):
   #   print(row)

@@ -1,27 +1,27 @@
 from update import update
 import report
-import process_share_ids
+import process_stock_ids
 import help_functions
 def main():
   print("options: add, update, report, exit")
   option = input("Enter your choice: ").strip().lower()
   while (option != 'exit'):
     if option == 'add':
-      with open('share_list.txt', 'r') as f:
-        share_id_list = [line.strip() for line in f if line.strip()]
-      if not share_id_list:
-        print("No share IDs found in 'share_list.txt'.")
+      with open('stock_list.txt', 'r') as f:
+        stock_id_list = [line.strip() for line in f if line.strip()]
+      if not stock_id_list:
+        print("No stock IDs found in 'stock_list.txt'.")
         return
-      share_id_list = process_share_ids.to_tx_ids(share_id_list)
-      print(f"Processed {len(share_id_list)} Share IDs:")
-      update(share_id_list)
+      stock_id_list = process_stock_ids.to_tx_ids(stock_id_list)
+      print(f"Processed {len(stock_id_list)} stock IDs:")
+      update(stock_id_list)
 
     elif option == 'update':
-      share_id_list = help_functions.database_list()
-      if not share_id_list:
-        print("No database files found in 'share_data' directory.")
+      stock_id_list = help_functions.database_list()
+      if not stock_id_list:
+        print("No database files found in 'stock_data' directory.")
         return
-      update(share_id_list)
+      update(stock_id_list)
 
     elif option == 'report':
       report.report()

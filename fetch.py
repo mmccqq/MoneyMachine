@@ -2,23 +2,23 @@ import requests, json
 import SQL_operation as SQL
 from datetime import datetime
 
-def get_data_min_tx(share_id, count = '', frequency = '60m'):
+def get_data_min_tx(stock_id, count = '', frequency = '60m'):
 
-  URL = f'http://ifzq.gtimg.cn/appstock/app/kline/mkline?param={share_id},m{frequency},,{count}'
+  URL = f'http://ifzq.gtimg.cn/appstock/app/kline/mkline?param={stock_id},m{frequency},,{count}'
 
   response = requests.get(URL)
   raw_data = json.loads(response.content)
-  share_min_data = raw_data['data'][f'{share_id}'][f'm{frequency}']
+  stock_min_data = raw_data['data'][f'{stock_id}'][f'm{frequency}']
   result = []
   
-  connection = SQL.create_connection(f'{share_id}.db')
+  connection = SQL.create_connection(f'{stock_id}.db')
   latest = SQL.search_data_by_condition(connection, frequency, f"date <= '{datetime.today().strftime("%Y-%m-%d")}'", 1);      
   if not latest:
     latest = '2015-01-01'
   else:
     latest = latest[0][1]
   # convert raw data to required format
-  for index, data in enumerate(share_min_data):
+  for index, data in enumerate(stock_min_data):
     result.append([])
     if int(latest) < int(data[0]):
       result[index].append(data[0][0:4])
@@ -32,13 +32,13 @@ def get_data_min_tx(share_id, count = '', frequency = '60m'):
   #need to avoid duplicate data
   SQL.insert_raw_data(connection, frequency, result)
 
-def get_data_day_tx(share_id, end_date = '', count = '', frequency = 'day'):
-  URL = f'https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param={share_id},{frequency},,{end_date},{count},qfq'
+def get_data_day_tx(stock_id, end_date = '', count = '', frequency = 'day'):
+  URL = f'https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param={stock_id},{frequency},,{end_date},{count},qfq'
   response = requests.get(URL)
   raw_data = json.loads(response.content)
-  share_day_data = raw_data['data'][f'{share_id}'][f'qfq{frequency}']
+  stock_day_data = raw_data['data'][f'{stock_id}'][f'qfq{frequency}']
   
-  connection = SQL.create_connection(f'share_data/{share_id}.db')
+  connection = SQL.create_connection(f'stock_data/{stock_id}.db')
 
   if SQL.if_table_exists(connection, frequency) == False:
     SQL.create_table(connection, frequency)
@@ -52,7 +52,7 @@ def get_data_day_tx(share_id, end_date = '', count = '', frequency = 'day'):
   
   insert_data = []
   date_list = []
-  for data in share_day_data:
+  for data in stock_day_data:
     if latest < data[0]:
       insert_data.append([])
       date_list.append(data[0])
@@ -63,12 +63,12 @@ def get_data_day_tx(share_id, end_date = '', count = '', frequency = 'day'):
   # for row in SQL.fetch_all_data(connection, frequency):
   #   print(row)
   return date_list
-def get_price(share_id, end_date = '', count = '', frequency = '60'):
+def get_price(stock_id, end_date = '', count = '', frequency = '60'):
   # determine if update is necessary
   if frequency in ['day', 'week', 'month']:
-    return get_data_day_tx(share_id, end_date, count, frequency)
+    return get_data_day_tx(stock_id, end_date, count, frequency)
   else:
-    return get_data_min_tx(share_id, count, frequency)
+    return get_data_min_tx(stock_id, count, frequency)
 
 def main():
   get_price('sh603686', end_date = '2025-07-30', count = '10', frequency = 'day')
