@@ -1,16 +1,10 @@
 from datetime import datetime
-import os
+import help_functions
 from update import update
 import strategy
 import sqlite3  
 def report():
-  share_id_list = []
-  with os.scandir('share_data') as entries:
-    for entry in entries:
-      if entry.is_file() and entry.name.endswith('.db'):
-        share_id = entry.name[:-3]
-        share_id_list.append(share_id)
-  
+  share_id_list = help_functions.database_list()
   if not share_id_list:
     print("No database files found in 'share_data' directory.")
     return
@@ -19,7 +13,7 @@ def report():
     connection = sqlite3.connect(f'share_data/{share_id}.db')
     result = strategy.buy_potential(connection, 'day', datetime.today().strftime("%Y-%m-%d"))
     if result:
-      print(f"Buy potential detected for {share_id} on {result[0]}: Close Price = {result[1]}, Low = {result[2]}, BOLL Lower = {result[3]}")
+      print(f"Buy potential detected for {share_id} today, pass lower bollinger band.")
     else:
       print(f"No buy potential for {share_id}.")
     connection.close()

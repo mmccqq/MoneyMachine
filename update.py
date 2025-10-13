@@ -12,7 +12,7 @@ def update(share_id_list):
       latest = SQL.search_data_by_condition(connection, frequency, f"date <= '{datetime.today().strftime("%Y-%m-%d")}'", 1);      
       # fetch new data from that date to today.
       if not latest:
-        latest = '2015-01-01'
+        latest = '2023-01-01'
       else:
         latest = latest[0][1]
       if frequency == 'day':
@@ -41,20 +41,20 @@ def main():
   # fetch.get_price('sh603686', end_date = '2024-01-01', count = '10', frequency = 'day')
 
   update(['sh603686'])
-  SQL.create_table(connection, 'day')
-  cursor = connection.cursor()
+  # SQL.create_table(connection, 'day')
+  # cursor = connection.cursor()
 
-  # Query data
-  cursor.execute("SELECT * FROM day")
-  rows = cursor.fetchall()
+  # # Query data
+  # cursor.execute("SELECT * FROM day")
+  # rows = cursor.fetchall()
 
   # Save to CSV
-  with open("students.csv", "w", newline="") as file:
-      writer = csv.writer(file)
-      writer.writerow([description[0] for description in cursor.description])  # header
-      writer.writerows(rows)
+  # with open("students.csv", "w", newline="") as file:
+  #     writer = csv.writer(file)
+  #     writer.writerow([description[0] for description in cursor.description])  # header
+  #     writer.writerows(rows)
 
-  connection.close()
+  # connection.close()
 
 if __name__ == '__main__':
   main()

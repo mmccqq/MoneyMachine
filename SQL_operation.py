@@ -123,6 +123,9 @@ def fetch_all_data(connection, frequency:str):
     raise
 
 def search_data_by_condition(connection, frequency:str, condition:str, count:int):
+  if if_table_exists(connection, frequency) == False:
+    create_table(connection, frequency)
+  
   query = f"SELECT * FROM {frequency} WHERE {condition} ORDER BY date DESC LIMIT {count}"
   try:
     with connection:
