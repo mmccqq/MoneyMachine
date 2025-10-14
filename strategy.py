@@ -8,6 +8,6 @@ def buy_potential(stock_id, frequency, date):
   low = data[0][11]
   boll_lower = data[0][20]
   below_boll = False
-  if boll_lower > 0 and (low - boll_lower) / boll_lower < 0.02:
+  if boll_lower > 0 and (low - boll_lower) / boll_lower < 0.01:
     below_boll = True
   return below_boll
