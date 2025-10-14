@@ -1,9 +1,9 @@
 import SQL_operation as SQL
 # close_price reach a certain price
-def buy_potential(connection, frequency, date):
-  condition = f"date <= '{date}'"
+def buy_potential(stock_id, frequency, date):
   # just for day frequency now
-  data = SQL.search_data_by_condition(connection, frequency, condition, 1)
+  data = stock_id.query_rows(frequency, columns='*', where_dict={"date <= ": f"{date}"}, order_by="date DESC", limit=1)
+  # data = SQL.search_data_by_condition(connection, frequency, condition, 1)
   close = data[0][9]
   low = data[0][11]
   boll_lower = data[0][20]

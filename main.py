@@ -2,7 +2,13 @@ from update import update
 import report
 import process_stock_ids
 import help_functions
+from SQL.Metadata_DB import Metadata_DB
 def main():
+  #initialize
+  metadata = Metadata_DB("metadata")
+  if metadata.if_table_exists('metadata') == False:
+    metadata.create_table()
+
   print("options: add, update, report, exit")
   option = input("Enter your choice: ").strip().lower()
   while (option != 'exit'):

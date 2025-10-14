@@ -18,8 +18,31 @@ def if_table_exists(connection, frequency:str):
   except Exception as e:
     print(f"Error checking table existence: {e}")
     raise
+def create_metadata_table(connection):
+  # Create table if it does not exist
+  query = '''
+  CREATE TABLE IF NOT EXISTS metadata (
+      stock_id TEXT PRIMARY KEY,
+      last_month_updated DATE,
+      last_week_updated DATE,
+      last_day_updated DATE,
+      last_m120_updated DATETIME,
+      last_m60_updated DATETIME,
+      last_m30_updated DATETIME,
+      last_m15_updated DATETIME,
+      last_m5_updated DATETIME
+  );
+  '''
+  try:
+    with connection:
+      connection.execute(query)
+      print("Metadata table created successfully")
+      return True
+  except Exception as e:
+    print(f"Error creating metadata table: {e}")
+    raise
 
-def create_table(connection, frequency:str):
+def create_stock_table(connection, frequency:str):
   # Create table if it does not exist
   if frequency in ['week', 'month']:
     query = f"""
@@ -97,6 +120,20 @@ def insert_raw_data(connection, frequency:str, data:tuple):
     print(f"Error inserting data: {e}")
     raise
 
+def update_metadata(connection, stock_id:str, frequency, last_updated:str):
+  query = f"""
+  INSERT INTO metadata (stock_id, last_{frequency}_updated)
+  VALUES (?, ?)
+  ON CONFLICT(stock_id) DO UPDATE SET last_{frequency}_updated=excluded.last_{frequency}_updated;
+  """
+  try:
+    with connection:
+      connection.execute(query, (stock_id, last_updated))
+    # print("Metadata updated successfully")
+  except Exception as e:
+    print(f"Error updating metadata: {e}")
+    raise
+
 def update_data(connection, frequency:str, data:tuple):
   query = f"""
   UPDATE {frequency}
@@ -111,6 +148,7 @@ def update_data(connection, frequency:str, data:tuple):
   except Exception as e:
     print(f"Error updating data: {e}")
     raise
+
 def fetch_all_data(connection, frequency:str):
   query = f"SELECT * FROM {frequency} ORDER BY date ASC"
   try:
@@ -124,7 +162,7 @@ def fetch_all_data(connection, frequency:str):
 
 def search_data_by_condition(connection, frequency:str, condition:str, count:int):
   if if_table_exists(connection, frequency) == False:
-    create_table(connection, frequency)
+    create_stock_table(connection, frequency)
   
   query = f"SELECT * FROM {frequency} WHERE {condition} ORDER BY date DESC LIMIT {count}"
   try:

@@ -3,18 +3,36 @@ import SQL_operation as SQL
 from datetime import datetime
 import fetch 
 from calculation import calculation
+from SQL.Stock_DB import Stock_DB
+from SQL.Metadata_DB import Metadata_DB
 
 def update(stock_id_list):
   # for each database, find the latest date in each table.
   for stock_id in stock_id_list:
-    connection = SQL.create_connection(f'stock_data/{stock_id}.db')
+    stock = Stock_DB(stock_id)
     for frequency in ['day']:
-      latest = SQL.search_data_by_condition(connection, frequency, f"date <= '{datetime.today().strftime("%Y-%m-%d")}'", 1);      
-      # fetch new data from that date to today.
+      if stock.if_table_exists(frequency) == False:
+        stock.create_table(frequency)
+      metadb = Metadata_DB("metadata")
+      if metadb.if_table_exists('metadata') == False:
+        metadb.create_table()
+
+      # check if update is necessary
+      last_update = metadb.query_rows('metadata', columns=f'last_{frequency}_updated', 
+                                      where_dict={"stock_id = ": f"{stock_id}"}, 
+                                      limit=1)
+      if last_update:
+        if (datetime.strptime(last_update[0][0], "%Y-%m-%d %H:%M:%S").date() 
+            >= datetime.today().date()):
+          print(f"No new data for {stock_id} in {frequency} table.")
+          continue
+      
+      latest = stock.query_rows(frequency, columns='date',
+                                order_by="date DESC", limit=1)
       if not latest:
-        latest = '2023-01-01'
+        latest = '2023-06-01'
       else:
-        latest = latest[0][1]
+        latest = latest[0][0]
       if frequency == 'day':
         count = (datetime.today() - datetime.strptime(latest, "%Y-%m-%d")).days
         if count == 0:
@@ -24,9 +42,9 @@ def update(stock_id_list):
       
       
       for date in date_list:
-        indicators = calculation(connection, frequency, date)
-        indicators.append(date)
-        SQL.update_data(connection, frequency, indicators)
+        indicators = calculation(stock, frequency, date)
+        stock.update_row(frequency,indicators, {"date": date})
+      metadb.update_metadata(stock_id, frequency, datetime.today().strftime("%Y-%m-%d %H:%M:%S"))
 
         
 
@@ -34,13 +52,12 @@ def update(stock_id_list):
       
 
 def main():
-  connection = SQL.create_connection("stock_data/sh603686.db")
- 
-  # for row in SQL.fetch_all_data(connection, 'day'):
-  #   print(row)
-  # fetch.get_price('sh603686', end_date = '2024-01-01', count = '10', frequency = 'day')
 
   update(['sh603686'])
+  stock_id = Stock_DB('sh603686')
+  rows = stock_id.query_rows('day')
+  # for row in rows:
+  #   print(row)
   # SQL.create_table(connection, 'day')
   # cursor = connection.cursor()
 
@@ -49,10 +66,10 @@ def main():
   # rows = cursor.fetchall()
 
   # Save to CSV
-  # with open("students.csv", "w", newline="") as file:
-  #     writer = csv.writer(file)
-  #     writer.writerow([description[0] for description in cursor.description])  # header
-  #     writer.writerows(rows)
+  with open("students.csv", "w", newline="") as file:
+      writer = csv.writer(file)
+      writer.writerow([description[0] for description in stock_id.cursor.description])  # header
+      writer.writerows(rows)
 
   # connection.close()
 

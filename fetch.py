@@ -1,10 +1,11 @@
 import requests, json
 import SQL_operation as SQL
 from datetime import datetime
+from SQL.Stock_DB import Stock_DB
 
-def get_data_min_tx(stock_id, count = '', frequency = '60m'):
+def get_data_min_tx(stock_id, count = '', frequency = 'm60'):
 
-  URL = f'http://ifzq.gtimg.cn/appstock/app/kline/mkline?param={stock_id},m{frequency},,{count}'
+  URL = f'http://ifzq.gtimg.cn/appstock/app/kline/mkline?param={stock_id},{frequency},,{count}'
 
   response = requests.get(URL)
   raw_data = json.loads(response.content)
@@ -27,7 +28,7 @@ def get_data_min_tx(stock_id, count = '', frequency = '60m'):
       for i in range(1, 5):
         result[index].append(data[i])
   if SQL.if_table_exists(connection, frequency) == False:
-    SQL.create_table(connection, frequency)
+    SQL.create_stock_table(connection, frequency)
 
   #need to avoid duplicate data
   SQL.insert_raw_data(connection, frequency, result)
@@ -38,17 +39,18 @@ def get_data_day_tx(stock_id, end_date = '', count = '', frequency = 'day'):
   raw_data = json.loads(response.content)
   stock_day_data = raw_data['data'][f'{stock_id}'][f'qfq{frequency}']
   
-  connection = SQL.create_connection(f'stock_data/{stock_id}.db')
+  stock = Stock_DB(stock_id)
 
-  if SQL.if_table_exists(connection, frequency) == False:
-    SQL.create_table(connection, frequency)
+  if stock.if_table_exists(frequency) == False:
+    stock.create_table(frequency)
 
   # need to avoid duplicate data
-  latest = SQL.search_data_by_condition(connection, frequency, f"date <= '{datetime.today().strftime("%Y-%m-%d")}'", 1);      
+  latest = stock.query_rows(frequency, columns='date', 
+                            order_by="date DESC", limit=1)
   if not latest:
     latest = '2015-01-01'
   else:
-    latest = latest[0][1]
+    latest = latest[0][0]
   
   insert_data = []
   date_list = []
@@ -56,22 +58,25 @@ def get_data_day_tx(stock_id, end_date = '', count = '', frequency = 'day'):
     if latest < data[0]:
       insert_data.append([])
       date_list.append(data[0])
-      for i in range(0, 5):
+      for i in range(5):
         insert_data[-1].append(data[i])
-  
-  SQL.insert_raw_data(connection, frequency, insert_data)
-  # for row in SQL.fetch_all_data(connection, frequency):
+  title = ["date", "open", "close", "high", "low"]
+  stock.insert_data(frequency, title, insert_data)
+
+  rows = stock.query_rows(frequency)
+  # for row in rows:
   #   print(row)
+
   return date_list
-def get_price(stock_id, end_date = '', count = '', frequency = '60'):
+def get_price(stock_id, end_date = '', count = '', frequency = 'm60'):
   # determine if update is necessary
   if frequency in ['day', 'week', 'month']:
     return get_data_day_tx(stock_id, end_date, count, frequency)
-  else:
+  else:#frequency in ['m5', 'm15', 'm30', 'm60', 'm120']:
     return get_data_min_tx(stock_id, count, frequency)
 
 def main():
-  get_price('sh603686', end_date = '2025-07-30', count = '10', frequency = 'day')
+  get_price('sh603686', end_date = '2024-07-30', count = '10', frequency = 'day')
 
 if __name__ == '__main__':
   main()
