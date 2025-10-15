@@ -70,9 +70,10 @@ class Abstract_DB(ABC):
       print(f"Error updating row: {e}")
       raise
   
-  # Get the latest daily row
-# rows = query_rows(conn, "day", order_by="date DESC", limit=1)
-# print(rows)
+  # Query rows from a table flexibly
+  # last_update = metadb.query_rows('metadata', columns=f'last_{frequency}_updated', 
+  #                                     where_dict={"stock_id = ": f"{stock_id}"}, 
+  #                                     limit=1)
   def query_rows(self, table_name, columns='*', where_dict=None, order_by=None, limit=None):
     """
     Query rows from a table flexibly.

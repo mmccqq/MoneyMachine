@@ -1,37 +1,6 @@
 import requests, json
-import SQL_operation as SQL
 from datetime import datetime
 from SQL.Stock_DB import Stock_DB
-
-def get_data_min_tx(stock_id, count = '', frequency = 'm60'):
-
-  URL = f'http://ifzq.gtimg.cn/appstock/app/kline/mkline?param={stock_id},{frequency},,{count}'
-
-  response = requests.get(URL)
-  raw_data = json.loads(response.content)
-  stock_min_data = raw_data['data'][f'{stock_id}'][f'm{frequency}']
-  result = []
-  
-  connection = SQL.create_connection(f'{stock_id}.db')
-  latest = SQL.search_data_by_condition(connection, frequency, f"date <= '{datetime.today().strftime("%Y-%m-%d")}'", 1);      
-  if not latest:
-    latest = '2015-01-01'
-  else:
-    latest = latest[0][1]
-  # convert raw data to required format
-  for index, data in enumerate(stock_min_data):
-    result.append([])
-    if int(latest) < int(data[0]):
-      result[index].append(data[0][0:4])
-      result[index].append(data[0][4:8])
-      result[index].append(data[0][8:12])
-      for i in range(1, 5):
-        result[index].append(data[i])
-  if SQL.if_table_exists(connection, frequency) == False:
-    SQL.create_stock_table(connection, frequency)
-
-  #need to avoid duplicate data
-  SQL.insert_raw_data(connection, frequency, result)
 
 def get_data_day_tx(stock_id, end_date = '', count = '', frequency = 'day'):
   URL = f'https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param={stock_id},{frequency},,{end_date},{count},qfq'
@@ -72,8 +41,8 @@ def get_price(stock_id, end_date = '', count = '', frequency = 'm60'):
   # determine if update is necessary
   if frequency in ['day', 'week', 'month']:
     return get_data_day_tx(stock_id, end_date, count, frequency)
-  else:#frequency in ['m5', 'm15', 'm30', 'm60', 'm120']:
-    return get_data_min_tx(stock_id, count, frequency)
+  # else:#frequency in ['m5', 'm15', 'm30', 'm60', 'm120']:
+  #   return get_data_min_tx(stock_id, count, frequency)
 
 def main():
   get_price('sh603686', end_date = '2024-07-30', count = '10', frequency = 'day')
