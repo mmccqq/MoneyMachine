@@ -1,8 +1,7 @@
 import os, csv
-import SQL_operation as SQL
 from datetime import datetime
-import fetch 
-from calculation import calculation
+import core_py_files.fetch  as fetch
+from core_py_files.calculation import calculation
 from SQL.Stock_DB import Stock_DB
 from SQL.Metadata_DB import Metadata_DB
 

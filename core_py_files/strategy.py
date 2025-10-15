@@ -1,4 +1,4 @@
-import SQL_operation as SQL
+from SQL.Stock_DB import Stock_DB
 # close_price reach a certain price
 def buy_potential(stock_id, frequency, date):
   # just for day frequency now

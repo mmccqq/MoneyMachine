@@ -1,7 +1,7 @@
-from update import update
-import report
-import process_stock_ids
-import help_functions
+from core_py_files.update import update
+from core_py_files.report import report
+import core_py_files.process_stock_ids as process_stock_ids
+import core_py_files.help_functions as help_functions
 from SQL.Metadata_DB import Metadata_DB
 def main():
   #initialize

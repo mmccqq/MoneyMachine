@@ -1,9 +1,14 @@
 from datetime import datetime
-import help_functions
-from update import update
-import strategy
-from SQL.Stock_DB import Stock_DB
+
 import os
+
+from SQL.Stock_DB import Stock_DB
+import core_py_files.strategy as strategy
+from core_py_files.update import update
+import core_py_files.process_stock_ids as process_stock_ids
+import core_py_files.help_functions as help_functions
+from SQL.Metadata_DB import Metadata_DB
+
 def report():
   results = []
   stock_id_list = help_functions.database_list()

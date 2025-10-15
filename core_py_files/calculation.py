@@ -1,5 +1,4 @@
-import formulas
-import SQL_operation as SQL
+import core_py_files.formulas as formulas
 from SQL.Stock_DB import Stock_DB
 # calculate indicators.
 def calculation(stock, table, date):
