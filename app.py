@@ -23,6 +23,22 @@ def get_id_list():
         result[-1]['change'] = id[3] if id[3] is not None else 0.0
     return jsonify(result)
 
+@app.route('/api/suggested_id_lst', methods=['GET'])
+def get_suggested_id_list():
+    from core_py_files.report import report
+    suggested_ids = report()
+    metadata = Metadata_DB("metadata")
+    result = []
+    for stock_id in suggested_ids:
+        info = metadata.query_rows('metadata', where_dict={"stock_id = ": f"{stock_id}"}, limit=1)
+        if info:
+            result.append({})
+            result[-1]['code'] = info[0][0]
+            result[-1]['name'] = info[0][1]
+            result[-1]['price'] = info[0][2] if info[0][2] is not None else 0.0
+            result[-1]['change'] = info[0][3] if info[0][3] is not None else 0.0
+    return jsonify(result)
+
 @app.route('/api/update', methods=['GET'])
 def update_data():
     stock_id_list = database_list()

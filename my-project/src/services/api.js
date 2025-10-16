@@ -98,6 +98,14 @@ export default {
     return await response.json();
   },
 
+  async getSuggestedStocks({ q } = {}) {
+    const response = await fetch(`http://127.0.0.1:5000/api/suggested_id_lst`);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return await response.json();
+  },
+
   async getSummary(stock_id) {
     const limit = 1;
     const order = "date DESC";

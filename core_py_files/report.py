@@ -11,6 +11,7 @@ from SQL.Metadata_DB import Metadata_DB
 
 def report():
   results = []
+  suggested_ids = []
   stock_id_list = help_functions.database_list()
   if not stock_id_list:
     print("No database files found in 'stock_data' directory.")
@@ -21,15 +22,16 @@ def report():
     # connection = sqlite3.connect(f'stock_data/{stock_id}.db')
     result = strategy.buy_potential(stock, 'day', datetime.today().strftime("%Y-%m-%d"))
     if result:
+      suggested_ids.append(stock_id)
       results.append(f"{stock_id}: Buy potential detected for today, pass lower bollinger band.\n")
-  
+
   if results:
     with open('report.txt', 'w') as f:
       f.writelines(results)
       print("Report generated: report.txt")
   else:
     print("No buy potential detected today. Report generated: report.txt")
-
+  return suggested_ids
 
 
 def main():

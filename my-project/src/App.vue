@@ -9,12 +9,27 @@
 
 
     <aside class="sidebar">
-      <!-- <div class="search">
-        <input v-model="query" placeholder="Search stock id or name..." @keyup.enter="search" />
-        <button class="btn" @click="search">Search</button>
-      </div> -->
 
-      <div class="stock-list">
+      <!-- Added tabs for "All" and "Suggested" -->
+      <div class="tabs">
+        <button 
+          class="tab-btn" 
+          :class="{ active: activeTab === 'all' }"
+          @click="switchTab('all')"
+        >
+          All
+        </button>
+        <button 
+          class="tab-btn" 
+          :class="{ active: activeTab === 'suggested' }"
+          @click="switchTab('suggested')"
+        >
+          Suggested
+        </button>
+      </div>
+
+      <!-- Added v-if to show stock list only when stocks exist -->
+      <div class="stock-list" v-if="stocks.length">
         <div
           v-for="s in stocks"
           :key="s.code"
@@ -35,6 +50,10 @@
             </div>
           </div>
         </div>
+      </div>
+      <!-- Added empty state message -->
+      <div v-else class="no-stocks">
+        No stocks yet
       </div>
     </aside>
 
@@ -94,19 +113,43 @@ export default {
     const chart = ref(null)
     const kData = ref([])
     const notification = ref({ show: false, message: '' })
+    const activeTab = ref('all') // 'all' or 'suggested'
 
 
     const formatNumber = (v) => (typeof v === 'number' ? v.toFixed(2) : v)
 
     async function fetchStocks() {
       try {
-        // const res = await api.getStocks({ q: query.value })
         const res = await api.getAllStocks({ q: query.value })
         // expected res = [{code, name, price, change}, ...]
         stocks.value = res
         if (!selected.value && stocks.value.length) selectStock(stocks.value[0])
       } catch (err) {
         console.error(err)
+      }
+    }
+
+    async function fetchSuggestedStocks() {
+      try {
+        const res = await api.getSuggestedStocks({ q: query.value })
+        // expected res = [{code, name, price, change}, ...]
+        stocks.value = res
+        if (!selected.value && stocks.value.length) selectStock(stocks.value[0])
+      } catch (err) {
+        console.error(err)
+      }
+    }
+
+  
+
+    function switchTab(tab) {
+      if (activeTab.value !== tab) {
+        activeTab.value = tab
+        if (tab === 'all') {
+          fetchStocks() // Fetch all stocks
+        } else if (tab === 'suggested') {
+          fetchSuggestedStocks() // Fetch suggested stocks
+        }
       }
     }
 
@@ -344,11 +387,13 @@ export default {
       summary,
       chartEl,
       kData,
+      activeTab,
       fetchStocks,
       notification,
       updateList,
       fetchChart,
       selectStock,
+      switchTab,
       formatNumber,
       search
     }
@@ -362,6 +407,44 @@ export default {
 pointer-events: auto !important; }
 .chart-card {
   pointer-events: auto !important;
+}
+
+/* ========== CHANGE: Added styles for tabs ========== */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid #2b3b43;
+  margin-bottom: 12px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  color: #9aa6b2;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-btn.active {
+  color: #ffd208;
+  border-bottom-color: #ffd208;
+}
+
+.no-stocks {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .notification {
