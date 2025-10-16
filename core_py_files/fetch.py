@@ -7,6 +7,7 @@ def get_data_day_tx(stock_id, end_date = '', count = '', frequency = 'day'):
   response = requests.get(URL)
   raw_data = json.loads(response.content)
   stock_day_data = raw_data['data'][f'{stock_id}'][f'qfq{frequency}']
+  name = raw_data['data'][f'{stock_id}']['qt'][f'{stock_id}'][1]
   
   stock = Stock_DB(stock_id)
 
@@ -32,11 +33,11 @@ def get_data_day_tx(stock_id, end_date = '', count = '', frequency = 'day'):
   title = ["date", "open", "close", "high", "low"]
   stock.insert_data(frequency, title, insert_data)
 
-  rows = stock.query_rows(frequency)
+  # rows = stock.query_rows(frequency)
   # for row in rows:
   #   print(row)
 
-  return date_list
+  return date_list, name
 def get_price(stock_id, end_date = '', count = '', frequency = 'm60'):
   # determine if update is necessary
   if frequency in ['day', 'week', 'month']:

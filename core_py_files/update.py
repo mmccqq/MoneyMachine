@@ -6,6 +6,7 @@ from SQL.Stock_DB import Stock_DB
 from SQL.Metadata_DB import Metadata_DB
 
 def update(stock_id_list):
+  count = len(stock_id_list)
   # for each database, find the latest date in each table.
   for stock_id in stock_id_list:
     stock = Stock_DB(stock_id)
@@ -24,6 +25,7 @@ def update(stock_id_list):
         if (datetime.strptime(last_update[0][0], "%Y-%m-%d %H:%M:%S").date() 
             >= datetime.today().date()):
           print(f"No new data for {stock_id} in {frequency} table.")
+          count -= 1
           continue
       
       latest = stock.query_rows(frequency, columns='date',
@@ -37,13 +39,20 @@ def update(stock_id_list):
         if count == 0:
           print(f"No new data for {stock_id} in {frequency} table.")
           continue
-        date_list = fetch.get_price(stock_id, datetime.today().strftime("%Y-%m-%d"), count, 'day')
+        date_list, name = fetch.get_price(stock_id, datetime.today().strftime("%Y-%m-%d"), count, 'day')
       
       
       for date in date_list:
         indicators = calculation(stock, frequency, date)
         stock.update_row(frequency,indicators, {"date": date})
-      metadb.update_metadata(stock_id, frequency, datetime.today().strftime("%Y-%m-%d %H:%M:%S"))
+      
+      # update metadata
+      info = stock.query_rows(frequency, "open, close", order_by="date DESC", limit=1)
+      open = info[0][0]
+      close = info[0][1]
+      change = (close - open) / open if open != 0 else 0
+      metadb.update_metadata(stock_id, name, close, change, frequency, datetime.today().strftime("%Y-%m-%d %H:%M:%S"))
+  return count
 
         
 
