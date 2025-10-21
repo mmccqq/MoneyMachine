@@ -155,9 +155,14 @@ export default {
 
     async function updateList() {
       try {
+        showNotification(`updating stock list...`)
         const res = await api.update()
         showNotification(`Stock list updated: ${res.updated} items.`)
         fetchStocks()
+        if (selected.value) {
+        await fetchSummary()
+        await fetchChart()
+        }
       } catch (err) {
         console.error(err)
         showNotification('Failed to update stock list.')
