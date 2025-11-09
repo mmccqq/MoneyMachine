@@ -158,7 +158,11 @@ export default {
         showNotification(`updating stock list...`)
         const res = await api.update()
         showNotification(`Stock list updated: ${res.updated} items.`)
-        fetchStocks()
+        if (activeTab.value === 'suggested') {
+          await fetchSuggestedStocks()
+        } else {
+          await fetchStocks()
+        }
         if (selected.value) {
         await fetchSummary()
         await fetchChart()
