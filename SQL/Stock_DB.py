@@ -4,7 +4,7 @@ class Stock_DB(Abstract_DB):
     super().__init__(db_name)
     # self.create_table()
   
-  def construt_table_name(self, frequency:str):
+  def _construt_table_column_name(self, frequency:str):
     if frequency in ['week', 'month']:
         query = f"""
         CREATE TABLE IF NOT EXISTS {frequency} (
@@ -54,7 +54,7 @@ class Stock_DB(Abstract_DB):
 
   def create_table(self, frequency:str = None):
     if frequency:
-      query = self.construt_table_name(frequency)
+      query = self._construt_table_column_name(frequency)
       try:
         with self.connection:
           self.connection.execute(query)
@@ -65,7 +65,7 @@ class Stock_DB(Abstract_DB):
         raise
     else:
       for frequency in ['week', 'month', 'day', 'm5', 'm15', 'm30', 'm60', 'm120']:
-        query = self.construt_table_name(frequency)
+        query = self._construt_table_column_name(frequency)
         try:
           with self.connection:
             self.connection.execute(query)

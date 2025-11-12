@@ -225,7 +225,7 @@ export default {
               // Update summary with hovered values
               summary.value = {
                 open: open,
-                prevClose: summary.value.prevClose, // Keep original
+                prevClose:close,//summary.value.prevClose, // Keep original
                 high: high,
                 low: low
               }
