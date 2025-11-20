@@ -33,16 +33,16 @@ Database: SQLite3
 
 ## Project Structure
 
-stock_list.txt - Stock list configuration file. 
+`stock_list.txt` - Stock list configuration file. 
 
-app.py - Flask backend application
+`app.py` - Flask backend application
 
-my-project/ - Vue frontend project
+`my-project/` - Vue frontend project
 
-SQL/ - SQL database classes
+`SQL/` - SQL database classes
 
 ## Configuration
-stock_list.txt
+`stock_list.txt`
 
 To add new stocks, add them to this file. Currently, only Chinese stocks from the Main Board (主板) and ChiNext (创业板) are supported.
 Stock IDs should contain only numbers, or numbers prefixed with 'sh' or 'sz'.
