@@ -58,13 +58,13 @@ sz000001
 ## How to Run
 Start the Flask backend in bash:
 
-  'python app.py'
+  `python app.py`
 
 Start the Vue development server in bash:
 
-  'cd my-project'
+  `cd my-project`
 
-  'npm run dev'
+  `npm run dev`
 
 Open your browser and navigate to the link as shown in the bash, for example: http://localhost:5174/
 
